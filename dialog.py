@@ -2,18 +2,17 @@ import wx
 import pcbnew
 from onekiwi.controller.controller import Controller
 
-filename = '/home/vanson/working/kicad/thatico/radio-4g-stm32mp1xxaa/radio-4g-stm32mp15xxaa.kicad_pcb'
+filename = '/tmp/test.kicad_pcb'
 
 class SimplePluginApp(wx.App):
     def OnInit(self):
-        try:
-            board = pcbnew.LoadBoard(filename)
-            controller = Controller(board)
-            controller.Show()
-            return True
-        except OSError:
-            print("OSError: Unable to open file for reading.")
-            return 0
+        board = pcbnew.LoadBoard(filename)
+        if board is None:
+            print(f"Error: Unable to open file '{filename}' for reading.")
+            return False
+        controller = Controller(board)
+        controller.Show()
+        return True
 
 def main():
     app = SimplePluginApp()

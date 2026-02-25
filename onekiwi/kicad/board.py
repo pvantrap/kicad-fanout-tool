@@ -34,11 +34,11 @@ def get_kicad_version():
 
 def get_current_unit():
     unit = pcbnew.GetUserUnits()
-    # pcbnew.EDA_UNITS_INCHES = 0
-    if unit == pcbnew.EDA_UNITS_INCHES:
+    # pcbnew.EDA_UNITS_INCH = 0
+    if unit == pcbnew.EDA_UNITS_INCH:
         return 'in'
-    # pcbnew.EDA_UNITS_MILLIMETRES = 1
-    elif unit == pcbnew.EDA_UNITS_MILLIMETRES:
+    # pcbnew.EDA_UNITS_MM = 1
+    elif unit == pcbnew.EDA_UNITS_MM:
         return 'mm'
     # pcbnew.EDA_UNITS_MILS = 5
     elif unit == pcbnew.EDA_UNITS_MILS:

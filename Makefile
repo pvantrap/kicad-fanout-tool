@@ -11,9 +11,9 @@ install:
 	mkdir fanout-tool
 	cp __init__.py fanout-tool/
 	cp -r onekiwi/ fanout-tool/
-	rm -rf ~/.local/share/kicad/7.0/scripting/plugins/fanout-tool/
-	mv fanout-tool/ ~/.local/share/kicad/7.0/scripting/plugins
+	rm -rf ~/.local/share/kicad/9.0/scripting/plugins/fanout-tool/
+	mv fanout-tool/ ~/.local/share/kicad/9.0/scripting/plugins
 
 uninstall:
 	@echo "Uninstall Plugin"
-	rm -rf ~/.local/share/kicad/7.0/scripting/plugins/fanout-tool/
+	rm -rf ~/.local/share/kicad/9.0/scripting/plugins/fanout-tool/

@@ -141,12 +141,12 @@ class Controller:
         units = pcbnew.GetUserUnits()
         unit = ''
         scale = 1
-        # pcbnew.EDA_UNITS_INCHES = 0
-        if units == pcbnew.EDA_UNITS_INCHES:
+        # pcbnew.EDA_UNITS_INCH = 0
+        if units == pcbnew.EDA_UNITS_INCH:
             unit = 'in'
             scale = 25400000
-        # pcbnew.EDA_UNITS_MILLIMETRES = 1
-        elif units == pcbnew.EDA_UNITS_MILLIMETRES:
+        # pcbnew.EDA_UNITS_MM = 1
+        elif units == pcbnew.EDA_UNITS_MM:
             unit = 'mm'
             scale = 1000000
         # pcbnew.EDA_UNITS_MILS = 5
