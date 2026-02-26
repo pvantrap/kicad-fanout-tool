@@ -1,6 +1,12 @@
 #!/bin/bash -e
 
-version=$(git describe --tags --dirty)
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Error: Working directory is dirty. Commit or stash changes before releasing."
+    exit 1
+fi
+
+version=$(git describe --tags --abbrev=0)
 name=$(echo fanout-tool-$version.zip)
 
 echo "Building release $version"
