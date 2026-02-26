@@ -34,6 +34,15 @@ class BGA:
         major = int(version.split(".")[0])
         return major
     
+    def make_point(self, x, y):
+        """Create a point compatible with the current KiCad version."""
+        if self.get_major_version() >= 8:
+            # KiCad v8+ uses VECTOR2I directly
+            return pcbnew.VECTOR2I(int(x), int(y))
+        else:
+            # KiCad v7 and earlier use wxPoint
+            return self.make_point(int(x), int(y))
+    
     def init_data(self):
         if self.degrees not in [0.0 , 90.0, 180.0, -90.0]:
             degrees = self.degrees + 45.0
@@ -118,10 +127,10 @@ class BGA:
         if self.degrees in [0.0 , 90.0, 180.0, -90]:
             x = (minx + maxx)/2
             y = (miny + maxy)/2
-            xstart = pcbnew.wxPoint(x, maxy)
-            xend = pcbnew.wxPoint(x, miny)
-            ystart = pcbnew.wxPoint(minx, y)
-            yend = pcbnew.wxPoint(maxx, y)
+            xstart = self.make_point(x, maxy)
+            xend = self.make_point(x, miny)
+            ystart = self.make_point(minx, y)
+            yend = self.make_point(maxx, y)
             xtrack = pcbnew.PCB_TRACK(self.board)
             xtrack.SetStart(xstart)
             xtrack.SetEnd(xend)
@@ -144,13 +153,13 @@ class BGA:
             # y = ax + b
             xyminx = anphalx*minx + bx
             xymaxx = anphalx*maxx + bx
-            xstart = pcbnew.wxPoint(minx, xyminx)
-            xend = pcbnew.wxPoint(maxx, xymaxx)
+            xstart = self.make_point(minx, xyminx)
+            xend = self.make_point(maxx, xymaxx)
 
             yyminx = anphaly*minx + by
             yymaxx = anphaly*maxx + by
-            ystart = pcbnew.wxPoint(minx, yyminx)
-            yend = pcbnew.wxPoint(maxx, yymaxx)
+            ystart = self.make_point(minx, yyminx)
+            yend = self.make_point(maxx, yymaxx)
 
             xtrack = pcbnew.PCB_TRACK(self.board)
             xtrack.SetStart(xstart)
@@ -175,11 +184,11 @@ class BGA:
 
             y3 = any*minx + b2
             y4 = any*maxx + b2
-            start1 = pcbnew.wxPoint(minx, y1)
-            end1 = pcbnew.wxPoint(maxx, y2)
+            start1 = self.make_point(minx, y1)
+            end1 = self.make_point(maxx, y2)
 
-            start2 = pcbnew.wxPoint(minx, y3)
-            end2 = pcbnew.wxPoint(maxx, y4)
+            start2 = self.make_point(minx, y3)
+            end2 = self.make_point(maxx, y4)
 
             track1 = pcbnew.PCB_TRACK(self.board)
             track1.SetStart(start1)
@@ -236,7 +245,7 @@ class BGA:
                     # bottom-left 135
                     x = pos.x - self.pitchx/2
                     y = pos.y + self.pitchy/2
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
             else:
@@ -248,7 +257,7 @@ class BGA:
                     # top-left 45
                     x = pos.x - self.pitchx/2
                     y = pos.y - self.pitchy/2
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
     
@@ -270,7 +279,7 @@ class BGA:
                     # left
                     x = pos.x + pitch
                     y = pos.y
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
             else:
@@ -282,7 +291,7 @@ class BGA:
                     # top
                     x = pos.x
                     y = pos.y - pitch
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
 
@@ -362,7 +371,7 @@ class BGA:
                     elif degrees_90to180 or degrees_n90to0:
                         x = x2
                         y = pax*x + pbx
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
             else:
@@ -390,7 +399,7 @@ class BGA:
                     elif degrees_135to180 or degrees_n45to0:
                         x = x4
                         y = pay*x + pby
-                end = pcbnew.wxPoint(x, y)
+                end = self.make_point(x, y)
                 self.add_track(net, pos, end)
                 self.add_via(net, end)
 
@@ -413,7 +422,7 @@ class BGA:
             if self.direction =='BottomRight':
                 x = pos.x + self.pitchx/2
                 y = pos.y + self.pitchy/2
-            end = pcbnew.wxPoint(x, y)
+            end = self.make_point(x, y)
             self.add_track(net, pos, end)
             self.add_via(net, end)
 
@@ -436,7 +445,7 @@ class BGA:
             if self.direction =='BottomRight':
                 x = pos.x
                 y = pos.y - pitch
-            end = pcbnew.wxPoint(x, y)
+            end = self.make_point(x, y)
             self.add_track(net, pos, end)
             self.add_via(net, end)
 
@@ -484,7 +493,7 @@ class BGA:
             if self.direction =='BottomRight':
                 x = x3
                 y = pay*x + pby
-            end = pcbnew.wxPoint(x, y)
+            end = self.make_point(x, y)
             self.add_track(net, pos, end)
             self.add_via(net, end)
 
@@ -533,7 +542,7 @@ class BGA:
                     if self.direction =='Counterclockwise':
                         x = pos.x - self.pitchx/2
                         y = pos.y - self.pitchy/2
-            end = pcbnew.wxPoint(x, y)
+            end = self.make_point(x, y)
             self.add_track(net, pos, end)
             self.add_via(net, end)
     
@@ -579,18 +588,22 @@ class BGA:
                         x = pos.x - pitch
                         y = pos.y
                     
-            end = pcbnew.wxPoint(x, y)
+            end = self.make_point(x, y)
             self.add_track(net, pos, end)
             self.add_via(net, end)
 
     def add_track(self, net, start, end):
         track = pcbnew.PCB_TRACK(self.board)
-        if self.get_major_version() >= 7:
+        if self.get_major_version() >= 8:
+            # KiCad v8+ - start/end are already VECTOR2I
+            track.SetStart(start)
+            track.SetEnd(end)
+        elif self.get_major_version() >= 7:
             # KiCad v7
             track.SetStart(pcbnew.VECTOR2I(start))
             track.SetEnd(pcbnew.VECTOR2I(end))
         else:
-            # KiCad v7
+            # KiCad v6
             track.SetStart(start)
             track.SetEnd(end)
         track.SetWidth(self.track)
@@ -602,13 +615,20 @@ class BGA:
     def add_via(self, net, pos):
         via = pcbnew.PCB_VIA(self.board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
-        if self.get_major_version() >= 7:
+        if self.get_major_version() >= 8:
+            # KiCad v8+ - pos is already VECTOR2I
+            via.SetPosition(pos)
+        elif self.get_major_version() >= 7:
             # KiCad v7
             via.SetPosition(pcbnew.VECTOR2I(pos))
         else:
             # KiCad v6
             via.SetPosition(pos)
-        via.SetWidth(int(self.via.m_Diameter))
+        # SetWidth was renamed to SetDiameter in newer versions
+        if hasattr(via, 'SetDiameter'):
+            via.SetDiameter(int(self.via.m_Diameter))
+        else:
+            via.SetWidth(int(self.via.m_Diameter))
         via.SetDrill(self.via.m_Drill)
         via.SetNetCode(net)
         self.board.Add(via)
