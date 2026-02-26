@@ -27,6 +27,7 @@ class Controller:
         self.view.choicePackage.Bind( wx.EVT_CHOICE, self.OnChoicePackage)
         self.view.choiceAlignment.Bind( wx.EVT_CHOICE, self.OnChoiceAlignment)
         self.view.choiceDirection.Bind( wx.EVT_CHOICE, self.OnChoiceDirection)
+        self.view.choiceReference.Bind( wx.EVT_CHOICE, self.OnChoiceReference)
         self.view.editFilter.Bind(wx.EVT_TEXT, self.OnFilterChange)
         
         self.add_references()
@@ -123,6 +124,17 @@ class Controller:
         #value = event.GetEventObject().GetString(i)
         image = self.packages[x].alignments[y].directions[i].image
         self.view.SetImagePreview(image)
+
+    def OnChoiceReference(self, event):
+        reference = self.view.GetReferenceSelected()
+        if reference == '':
+            return
+        footprint = self.board.FindFootprintByReference(reference)
+        if footprint is None:
+            return
+        # Focus and zoom to the footprint
+        pcbnew.FocusOnItem(footprint)
+        pcbnew.Refresh()
 
     def OnFilterChange(self, event):
         self.logger.info('OnFilterChange')
