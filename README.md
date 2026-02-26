@@ -1,20 +1,34 @@
 # ![icon](onekiwi/icon.png) Fanout Tool
 
-***
-<img src="https://img.shields.io/badge/KiCad-v6-brightgreen?style=flat&logo=KiCad" height="30px"/> <img src="https://img.shields.io/badge/KiCad-v7-brightgreen?style=flat&logo=KiCad" height="30px"/>
-***
+## History
+
+This tool by [OneKiwi](https://github.com/OneKiwiTech) orignally has disappeared from their repositories. It claimed compatibility with KiCad v6 and v7.
+
+This is a fork of a fork which was made compatible with KiCad v9. I
+will try to keep adding future release compatibility for this `pcbnew`
+[Action Plugin](https://dev-docs.kicad.org/en/apis-and-binding/pcbnew/index.html#_action_plugin_support)
+but KiCad will remove the SWIG-based Python bindings in a future
+version hence this code will need porting to the, more stable, IPC
+API. See https://dev-docs.kicad.org/en/apis-and-binding/pcbnew/index.html for
+more info.
 
 ## GUI
 ![screenshot](doc/fanout_tool.png)
 
 ## Installation 💾
 
-Add our custom repo to **the Plugin and Content Manager**, the URL is `https://raw.githubusercontent.com/OneKiwiTech/onekiwi-kicad-repository/main/repository.json`
+Use the Makefile as follows, from linux:
+```
+make uninstall
+make install
+```
 
-![pcm](doc/pcm.png)
+TODO: For other platforms, use the zip file which is built here as part of GitHub Actions workflow.
 
-From there you can install the plugin via the GUI.
-
+Or build it yourself:
+```
+make release
+```
 
 ## Demo Video
 [![Watch the video](https://img.youtube.com/vi/-J81S3inhoc/sddefault.jpg)](https://youtu.be/-J81S3inhoc)

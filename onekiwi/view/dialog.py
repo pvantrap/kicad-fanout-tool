@@ -33,13 +33,13 @@ class FanoutDialog ( wx.Dialog ):
 		fgSizer1.SetFlexibleDirection( wx.VERTICAL )
 		fgSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.textFilttter = wx.StaticText( sbSizer5.GetStaticBox(), wx.ID_ANY, u"Filtter:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.textFilttter.Wrap( -1 )
+		self.textFilter = wx.StaticText( sbSizer5.GetStaticBox(), wx.ID_ANY, u"Filter:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.textFilter.Wrap( -1 )
 
-		fgSizer1.Add( self.textFilttter, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		fgSizer1.Add( self.textFilter, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.editFiltter = wx.TextCtrl( sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer1.Add( self.editFiltter, 0, wx.ALL|wx.EXPAND, 5 )
+		self.editFilter = wx.TextCtrl( sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer1.Add( self.editFilter, 0, wx.ALL|wx.EXPAND, 5 )
 
 		self.textReference = wx.StaticText( sbSizer5.GetStaticBox(), wx.ID_ANY, u"Reference:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.textReference.Wrap( -1 )

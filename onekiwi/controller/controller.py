@@ -27,7 +27,8 @@ class Controller:
         self.view.choicePackage.Bind( wx.EVT_CHOICE, self.OnChoicePackage)
         self.view.choiceAlignment.Bind( wx.EVT_CHOICE, self.OnChoiceAlignment)
         self.view.choiceDirection.Bind( wx.EVT_CHOICE, self.OnChoiceDirection)
-        self.view.editFiltter.Bind(wx.EVT_TEXT, self.OnFiltterChange)
+        self.view.choiceReference.Bind( wx.EVT_CHOICE, self.OnChoiceReference)
+        self.view.editFilter.Bind(wx.EVT_TEXT, self.OnFilterChange)
         
         self.add_references()
         self.get_tracks_vias()
@@ -124,8 +125,19 @@ class Controller:
         image = self.packages[x].alignments[y].directions[i].image
         self.view.SetImagePreview(image)
 
-    def OnFiltterChange(self, event):
-        self.logger.info('OnFiltterChange')
+    def OnChoiceReference(self, event):
+        reference = self.view.GetReferenceSelected()
+        if reference == '':
+            return
+        footprint = self.board.FindFootprintByReference(reference)
+        if footprint is None:
+            return
+        # Focus and zoom to the footprint
+        pcbnew.FocusOnItem(footprint)
+        pcbnew.Refresh()
+
+    def OnFilterChange(self, event):
+        self.logger.info('OnFilterChange')
         value = event.GetEventObject().GetValue()
         self.logger.info('text: %s' %value)
         self.view.ClearReferences()
@@ -141,12 +153,12 @@ class Controller:
         units = pcbnew.GetUserUnits()
         unit = ''
         scale = 1
-        # pcbnew.EDA_UNITS_INCHES = 0
-        if units == pcbnew.EDA_UNITS_INCHES:
+        # pcbnew.EDA_UNITS_INCH = 0
+        if units == pcbnew.EDA_UNITS_INCH:
             unit = 'in'
             scale = 25400000
-        # pcbnew.EDA_UNITS_MILLIMETRES = 1
-        elif units == pcbnew.EDA_UNITS_MILLIMETRES:
+        # pcbnew.EDA_UNITS_MM = 1
+        elif units == pcbnew.EDA_UNITS_MM:
             unit = 'mm'
             scale = 1000000
         # pcbnew.EDA_UNITS_MILS = 5
@@ -194,19 +206,16 @@ class Controller:
     def init_logger(self, texlog):
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
-        # Log to stderr
-        handler1 = logging.StreamHandler(sys.stderr)
-        handler1.setLevel(logging.DEBUG)
-        # and to our GUI
-        handler2 = LogText(texlog)
-        handler2.setLevel(logging.DEBUG)
+        # Clear existing handlers to avoid duplicates when plugin is reloaded
+        root.handlers.clear()
+        # Log to our GUI only
+        handler = LogText(texlog)
+        handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             "%(asctime)s - %(levelname)s - %(funcName)s -  %(message)s",
             datefmt="%Y.%m.%d %H:%M:%S",
         )
-        handler1.setFormatter(formatter)
-        handler2.setFormatter(formatter)
-        root.addHandler(handler1)
-        root.addHandler(handler2)
+        handler.setFormatter(formatter)
+        root.addHandler(handler)
         return logging.getLogger(__name__)
     

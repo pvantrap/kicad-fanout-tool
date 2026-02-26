@@ -79,7 +79,6 @@ class FanoutView(FanoutDialog):
     
     def GetDirectionValue(self):
         index = self.choiceDirection.GetSelection()
-        print(index)
         value = self.choiceDirection.GetString(index)
         return value
     
