@@ -206,19 +206,16 @@ class Controller:
     def init_logger(self, texlog):
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
-        # Log to stderr
-        handler1 = logging.StreamHandler(sys.stderr)
-        handler1.setLevel(logging.DEBUG)
-        # and to our GUI
-        handler2 = LogText(texlog)
-        handler2.setLevel(logging.DEBUG)
+        # Clear existing handlers to avoid duplicates when plugin is reloaded
+        root.handlers.clear()
+        # Log to our GUI only
+        handler = LogText(texlog)
+        handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             "%(asctime)s - %(levelname)s - %(funcName)s -  %(message)s",
             datefmt="%Y.%m.%d %H:%M:%S",
         )
-        handler1.setFormatter(formatter)
-        handler2.setFormatter(formatter)
-        root.addHandler(handler1)
-        root.addHandler(handler2)
+        handler.setFormatter(formatter)
+        root.addHandler(handler)
         return logging.getLogger(__name__)
     
