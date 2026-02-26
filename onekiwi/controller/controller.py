@@ -27,7 +27,7 @@ class Controller:
         self.view.choicePackage.Bind( wx.EVT_CHOICE, self.OnChoicePackage)
         self.view.choiceAlignment.Bind( wx.EVT_CHOICE, self.OnChoiceAlignment)
         self.view.choiceDirection.Bind( wx.EVT_CHOICE, self.OnChoiceDirection)
-        self.view.editFiltter.Bind(wx.EVT_TEXT, self.OnFiltterChange)
+        self.view.editFilter.Bind(wx.EVT_TEXT, self.OnFilterChange)
         
         self.add_references()
         self.get_tracks_vias()
@@ -124,8 +124,8 @@ class Controller:
         image = self.packages[x].alignments[y].directions[i].image
         self.view.SetImagePreview(image)
 
-    def OnFiltterChange(self, event):
-        self.logger.info('OnFiltterChange')
+    def OnFilterChange(self, event):
+        self.logger.info('OnFilterChange')
         value = event.GetEventObject().GetValue()
         self.logger.info('text: %s' %value)
         self.view.ClearReferences()
