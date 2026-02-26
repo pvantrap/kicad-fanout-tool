@@ -17,15 +17,15 @@ more info.
 
 ## Installation 💾
 
-Use the Makefile as follows, from linux:
+For all platforms, use the zip file which is part of the [releases](../../releases) here. Install it using KiCad Tools>Plugin and Content Manager>Install from file.
+
+Or, for Linux, use the Makefile as follows (it supports native and flatpak installation):
 ```
 make uninstall
 make install
 ```
 
-TODO: For other platforms, use the zip file which is built here as part of GitHub Actions workflow.
-
-Or build it yourself:
+BTW releases are built from a tagged commit as follows:
 ```
 make release
 ```
