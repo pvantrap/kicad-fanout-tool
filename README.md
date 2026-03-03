@@ -12,6 +12,20 @@ version hence this code will need porting to the, more stable, IPC
 API. See https://dev-docs.kicad.org/en/apis-and-binding/pcbnew/index.html for
 more info.
 
+## Changelog
+
+### v1.1.3
+- Add option to skip unconnected pads during fanout (enabled by default)
+
+### v1.1.2
+- Focus on component when reference is selected
+- Fix Filter typos in UI and controller
+- Remove debug print and stderr logging
+
+### v1.1.1
+- Add Flatpak installation support to Makefile
+- Fix KiCad 9 compatibility
+
 ## GUI
 ![screenshot](doc/fanout_tool.png)
 

@@ -187,6 +187,10 @@ class FanoutDialog ( wx.Dialog ):
 
 		sbSizer8.Add( bSizer10, 1, wx.EXPAND, 5 )
 
+		self.checkSkipUnconnected = wx.CheckBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"Skip unconnected pads", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkSkipUnconnected.SetValue( True )
+		sbSizer8.Add( self.checkSkipUnconnected, 0, wx.ALL, 5 )
+
 
 		bSizer5.Add( sbSizer8, 0, wx.EXPAND|wx.TOP, 5 )
 

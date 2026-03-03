@@ -67,8 +67,9 @@ class Controller:
         else:
             direction = self.view.GetDirectionValue()
         self.logger.info('direction: %s' %direction)
+        skip_unconnected = self.view.GetSkipUnconnected()
         self.model.update_data(reference, self.tracks[track_index], self.vias[via_index])
-        self.model.update_package(package, alignment, direction)
+        self.model.update_package(package, alignment, direction, skip_unconnected)
         self.model.fanout()
 
     def OnButtonUndo(self, event):

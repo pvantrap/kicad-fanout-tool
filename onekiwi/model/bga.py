@@ -2,7 +2,7 @@ import pcbnew
 import math
 
 class BGA:
-    def __init__(self, board, reference, track, via, alignment, direction, logger):
+    def __init__(self, board, reference, track, via, alignment, direction, logger, skip_unconnected=True):
         self.logger = logger
         self.board = board
         self.reference = reference
@@ -10,6 +10,7 @@ class BGA:
         self.via = via
         self.alignment = alignment
         self.direction = direction
+        self.skip_unconnected = skip_unconnected
         self.pitchx = 0
         self.pitchy = 0
         self.tracks = []
@@ -33,6 +34,25 @@ class BGA:
         version = str(pcbnew.Version())
         major = int(version.split(".")[0])
         return major
+    
+    def is_pad_connected(self, pad):
+        """Check if pad has a valid net connection (not unconnected)."""
+        if not self.skip_unconnected:
+            return True
+        net_code = pad.GetNetCode()
+        if net_code == 0:
+            return False
+        net = pad.GetNet()
+        if net is None:
+            return False
+        net_name = net.GetNetname()
+        # Skip if net name is empty or starts with 'unconnected-'
+        if not net_name or net_name.strip() == '':
+            return False
+        net_name_lower = net_name.lower()
+        if net_name_lower.startswith('unconnected-') and '-pad' in net_name_lower:
+            return False
+        return True
     
     def make_point(self, x, y):
         """Create a point compatible with the current KiCad version."""
@@ -234,6 +254,8 @@ class BGA:
     # quadrant
     def quadrant_0_90_180(self):
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             if pos.y > self.y0:
@@ -266,6 +288,8 @@ class BGA:
         by = self.y0 - self.x0
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             y1 = bx - pos.x
@@ -305,6 +329,8 @@ class BGA:
         pay = 1/math.tan(self.radian_pad)
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             y1 = anphalx*pos.x + bx0
@@ -406,6 +432,8 @@ class BGA:
     # diagonal
     def diagonal_0_90_180(self):
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             x = 0
@@ -429,6 +457,8 @@ class BGA:
     def diagonal_45_135(self):
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             x = pos.x
@@ -454,6 +484,8 @@ class BGA:
         pay = 1/math.tan(self.radian_pad)
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             pbx = pos.y - pax*pos.x
@@ -502,6 +534,8 @@ class BGA:
         bx = self.y0 + self.x0
         by = self.y0 - self.x0
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             y1 = bx - pos.x
@@ -549,6 +583,8 @@ class BGA:
     def xpattern_45_135(self):
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
         for pad in self.pads:
+            if not self.is_pad_connected(pad):
+                continue
             pos = pad.GetPosition()
             net = pad.GetNetCode()
             x = 0

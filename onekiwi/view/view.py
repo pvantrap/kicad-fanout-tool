@@ -86,3 +86,6 @@ class FanoutView(FanoutDialog):
         path = get_image_path()
         image = os.path.join(path, name)
         self.bitmapPreview.SetBitmap(wx.Bitmap(image))
+    
+    def GetSkipUnconnected(self):
+        return self.checkSkipUnconnected.GetValue()
