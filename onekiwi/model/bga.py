@@ -2,7 +2,7 @@ import pcbnew
 import math
 
 class BGA:
-    def __init__(self, board, reference, track, via, alignment, direction, logger, skip_unconnected=True):
+    def __init__(self, board, reference, track, via, alignment, direction, logger, skip_unconnected=True, outer_pad_tracks=False):
         self.logger = logger
         self.board = board
         self.reference = reference
@@ -11,9 +11,14 @@ class BGA:
         self.alignment = alignment
         self.direction = direction
         self.skip_unconnected = skip_unconnected
+        self.outer_pad_tracks = outer_pad_tracks
         self.pitchx = 0
         self.pitchy = 0
         self.tracks = []
+        self.minx = 0
+        self.maxx = 0
+        self.miny = 0
+        self.maxy = 0
 
         self.logger.info(reference)
         self.radian_pad = 0.0
@@ -53,6 +58,62 @@ class BGA:
         if net_name_lower.startswith('unconnected-') and '-pad' in net_name_lower:
             return False
         return True
+    
+    def is_outer_pad(self, pad):
+        """Check if pad is on the outer edge of the BGA."""
+        if not self.outer_pad_tracks:
+            return False
+        pos = pad.GetPosition()
+        tolerance = self.pitchx / 4  # Small tolerance for comparison
+        on_left = abs(pos.x - self.minx) < tolerance
+        on_right = abs(pos.x - self.maxx) < tolerance
+        on_top = abs(pos.y - self.miny) < tolerance
+        on_bottom = abs(pos.y - self.maxy) < tolerance
+        return on_left or on_right or on_top or on_bottom
+    
+    def get_outer_pad_direction(self, pad):
+        """Get the outward direction for an outer pad. Returns (dx, dy) normalized."""
+        pos = pad.GetPosition()
+        tolerance = self.pitchx / 4
+        # Check which edge(s) the pad is on and return outward direction
+        on_left = abs(pos.x - self.minx) < tolerance
+        on_right = abs(pos.x - self.maxx) < tolerance
+        on_top = abs(pos.y - self.miny) < tolerance
+        on_bottom = abs(pos.y - self.maxy) < tolerance
+        # For corner pads, prioritize top/bottom
+        if on_top:
+            return (0, -1)  # Up (negative Y in KiCad)
+        if on_bottom:
+            return (0, 1)   # Down (positive Y in KiCad)
+        if on_left:
+            return (-1, 0)  # Left
+        if on_right:
+            return (1, 0)   # Right
+        return (0, 0)
+    
+    def add_outer_track(self, net, start, pad):
+        """Add a 3mm straight track outwards from an outer pad on Top layer."""
+        IU_PER_MM = 1000000
+        track_length = 3 * IU_PER_MM  # 3mm
+        dx, dy = self.get_outer_pad_direction(pad)
+        end_x = start.x + dx * track_length
+        end_y = start.y + dy * track_length
+        end = self.make_point(end_x, end_y)
+        track = pcbnew.PCB_TRACK(self.board)
+        if self.get_major_version() >= 8:
+            track.SetStart(start)
+            track.SetEnd(end)
+        elif self.get_major_version() >= 7:
+            track.SetStart(pcbnew.VECTOR2I(start))
+            track.SetEnd(pcbnew.VECTOR2I(end))
+        else:
+            track.SetStart(start)
+            track.SetEnd(end)
+        track.SetWidth(self.track)
+        track.SetLayer(pcbnew.F_Cu)
+        track.SetNetCode(net)
+        self.board.Add(track)
+        self.tracks.append(track)
     
     def make_point(self, x, y):
         """Create a point compatible with the current KiCad version."""
@@ -136,6 +197,11 @@ class BGA:
         py = round(self.pitchy/IU_PER_MM, 4)
         self.logger.info('pitch x: %f mm' %px)
         self.logger.info('pitch y: %f mm' %py)
+        # Store bounds for outer pad detection
+        self.minx = minx
+        self.maxx = maxx
+        self.miny = miny
+        self.maxy = maxy
         """
         for ind, arrs in enumerate(pos_y):
             self.logger.info('%d. sort---------------------' %ind)
@@ -268,8 +334,7 @@ class BGA:
                     x = pos.x - self.pitchx/2
                     y = pos.y + self.pitchy/2
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
             else:
                 if pos.x > self.x0:
                     # top-right 315
@@ -280,8 +345,7 @@ class BGA:
                     x = pos.x - self.pitchx/2
                     y = pos.y - self.pitchy/2
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
     
     def quadrant_45_135(self):
         bx = self.y0 + self.x0
@@ -304,8 +368,7 @@ class BGA:
                     x = pos.x + pitch
                     y = pos.y
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
             else:
                 if pos.y > y2:
                     # right
@@ -316,8 +379,7 @@ class BGA:
                     x = pos.x
                     y = pos.y - pitch
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
 
     def quadrant_other_angle(self):
         anphalx = (-1)*math.tan(self.radian)
@@ -398,8 +460,7 @@ class BGA:
                         x = x2
                         y = pax*x + pbx
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
             else:
                 x = 0
                 y = 0
@@ -426,8 +487,7 @@ class BGA:
                         x = x4
                         y = pay*x + pby
                 end = self.make_point(x, y)
-                self.add_track(net, pos, end)
-                self.add_via(net, end)
+                self.add_fanout_for_pad(pad, end)
 
     # diagonal
     def diagonal_0_90_180(self):
@@ -451,8 +511,7 @@ class BGA:
                 x = pos.x + self.pitchx/2
                 y = pos.y + self.pitchy/2
             end = self.make_point(x, y)
-            self.add_track(net, pos, end)
-            self.add_via(net, end)
+            self.add_fanout_for_pad(pad, end)
 
     def diagonal_45_135(self):
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
@@ -476,8 +535,7 @@ class BGA:
                 x = pos.x
                 y = pos.y - pitch
             end = self.make_point(x, y)
-            self.add_track(net, pos, end)
-            self.add_via(net, end)
+            self.add_fanout_for_pad(pad, end)
 
     def diagonal_other_angle(self):
         pax = -1*math.tan(self.radian_pad)
@@ -526,8 +584,7 @@ class BGA:
                 x = x3
                 y = pay*x + pby
             end = self.make_point(x, y)
-            self.add_track(net, pos, end)
-            self.add_via(net, end)
+            self.add_fanout_for_pad(pad, end)
 
     #X-pattern
     def xpattern_0_90_180(self):
@@ -577,8 +634,7 @@ class BGA:
                         x = pos.x - self.pitchx/2
                         y = pos.y - self.pitchy/2
             end = self.make_point(x, y)
-            self.add_track(net, pos, end)
-            self.add_via(net, end)
+            self.add_fanout_for_pad(pad, end)
     
     def xpattern_45_135(self):
         pitch = math.sqrt(self.pitchx*self.pitchx + self.pitchy*self.pitchy)/2
@@ -625,8 +681,7 @@ class BGA:
                         y = pos.y
                     
             end = self.make_point(x, y)
-            self.add_track(net, pos, end)
-            self.add_via(net, end)
+            self.add_fanout_for_pad(pad, end)
 
     def add_track(self, net, start, end):
         track = pcbnew.PCB_TRACK(self.board)
@@ -669,6 +724,17 @@ class BGA:
         via.SetNetCode(net)
         self.board.Add(via)
         self.tracks.append(via)
+    
+    def add_fanout_for_pad(self, pad, end):
+        """Add track from pad to end, then via or outer track depending on options."""
+        pos = pad.GetPosition()
+        net = pad.GetNetCode()
+        if self.is_outer_pad(pad):
+            # For outer pads: only add straight outward track (no diagonal, no via)
+            self.add_outer_track(net, pos, pad)
+        else:
+            self.add_track(net, pos, end)
+            self.add_via(net, end)
 
     def remove_track_via(self):
         for item in self.tracks:

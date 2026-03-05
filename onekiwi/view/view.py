@@ -89,3 +89,6 @@ class FanoutView(FanoutDialog):
     
     def GetSkipUnconnected(self):
         return self.checkSkipUnconnected.GetValue()
+    
+    def GetOuterPadTracks(self):
+        return self.checkOuterPadTracks.GetValue()

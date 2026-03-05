@@ -27,18 +27,20 @@ class Model:
         self.track = track
         self.via = via
 
-    def update_package(self, package, alignment, direction, skip_unconnected=True):
+    def update_package(self, package, alignment, direction, skip_unconnected=True, outer_pad_tracks=False):
         self.package = package
         self.alignment = alignment
         self.direction = direction
         self.skip_unconnected = skip_unconnected
+        self.outer_pad_tracks = outer_pad_tracks
 
     def fanout(self):
         if self.package == 'BGA':
             self.bga = BGA(
                 self.board, self.reference, self.track, self.via, 
                 self.alignment, self.direction, self.logger,
-                skip_unconnected=self.skip_unconnected
+                skip_unconnected=self.skip_unconnected,
+                outer_pad_tracks=self.outer_pad_tracks
             )
             self.bga.fanout()
     

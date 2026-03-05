@@ -191,6 +191,10 @@ class FanoutDialog ( wx.Dialog ):
 		self.checkSkipUnconnected.SetValue( True )
 		sbSizer8.Add( self.checkSkipUnconnected, 0, wx.ALL, 5 )
 
+		self.checkOuterPadTracks = wx.CheckBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"Outer pads: straight track instead of via", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkOuterPadTracks.SetValue( True )
+		sbSizer8.Add( self.checkOuterPadTracks, 0, wx.ALL, 5 )
+
 
 		bSizer5.Add( sbSizer8, 0, wx.EXPAND|wx.TOP, 5 )
 

@@ -14,6 +14,9 @@ more info.
 
 ## Changelog
 
+### v1.1.4
+- Add option for outer BGA pads to use 3mm straight track (outward) instead of via
+
 ### v1.1.3
 - Add option to skip unconnected pads during fanout (enabled by default)
 
