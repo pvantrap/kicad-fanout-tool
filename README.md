@@ -30,7 +30,10 @@ more info.
 - Fix KiCad 9 compatibility
 
 ## GUI
+
 ![screenshot](doc/fanout_tool.png)
+
+![result screenshot](doc/fanout_tool_result.png)
 
 ## Installation 💾
 
