@@ -164,33 +164,41 @@ class Controller:
         self.view.AddReferences(self.model.references)
 
     def get_tracks_vias(self):
-        # Get design rules from project
-        project = self.board.get_project()
-        design_rules = self.board.get_design_rules()
-        
-        # For now, use default values - the IPC API exposes design rules differently
-        # We'll need to adapt this based on what's available
         tracklist = []
         vialist = []
-        
-        # Default track widths (in nm)
-        default_tracks = [200000, 250000, 300000, 400000, 500000]  # 0.2mm, 0.25mm, etc.
-        for track in default_tracks:
-            self.tracks.append(track)
-            display = f"{to_mm(track):.3f} mm"
-            tracklist.append(display)
-        
-        # Default via sizes (diameter, drill) in nm
-        default_vias = [
-            (800000, 400000),   # 0.8/0.4 mm
-            (600000, 300000),   # 0.6/0.3 mm
-            (500000, 250000),   # 0.5/0.25 mm
+
+        netclass_widths = set()
+        netclass_vias = set()
+
+        try:
+            project = self.board.get_project()
+            netclasses = project.get_net_classes()
+            for nc in netclasses:
+                if nc.track_width:
+                    netclass_widths.add(nc.track_width)
+                if nc.via_diameter and nc.via_drill:
+                    netclass_vias.add((nc.via_diameter, nc.via_drill))
+        except Exception as e:
+            self.logger.info("using defaults for tracks/vias: %s", e)
+            netclasses = []
+
+        widths = sorted(netclass_widths) if netclass_widths else [200000, 250000, 300000, 400000, 500000]
+        vias = sorted(netclass_vias) if netclass_vias else [
+            (800000, 400000),
+            (600000, 300000),
+            (500000, 250000),
         ]
-        for diam, drill in default_vias:
+
+        self.tracks.clear()
+        for track in widths:
+            self.tracks.append(track)
+            tracklist.append(f"{to_mm(track):.3f} mm")
+
+        self.vias.clear()
+        for diam, drill in vias:
             self.vias.append({'diameter': diam, 'drill': drill})
-            display = f"{to_mm(diam):.2f} / {to_mm(drill):.2f} mm"
-            vialist.append(display)
-        
+            vialist.append(f"{to_mm(diam):.2f} / {to_mm(drill):.2f} mm")
+
         self.view.AddTracksWidth(tracklist)
         self.view.AddViasSize(vialist)
         self.logger.info('get_design_settings')
