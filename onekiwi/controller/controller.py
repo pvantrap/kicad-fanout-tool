@@ -1,33 +1,42 @@
+# IPC-based controller for Fanout Tool
+# Uses kipy instead of pcbnew SWIG bindings
+
 from ..model.model import Model
 from ..view.view import FanoutView
 from .logtext import LogText
 import sys
 import logging
-import logging.config
 import wx
-import pcbnew
 from .package import get_packages
 
+from kipy import KiCad
+from kipy.board import Board
+from kipy.board_types import BoardLayer, FootprintInstance, Track, Via, ViaType
+from kipy.geometry import Vector2
+from kipy.util import from_mm, to_mm
+
+
 class Controller:
-    def __init__(self, board):
+    def __init__(self, kicad: KiCad, board: Board):
         self.view = FanoutView()
+        self.kicad = kicad
         self.board = board
         self.reference = None
         self.tracks = []
         self.vias = []
         self.packages = get_packages()
         self.logger = self.init_logger(self.view.textLog)
-        self.model = Model(self.board, self.logger)
+        self.model = Model(self.kicad, self.board, self.logger)
 
         # Connect Events
         self.view.buttonFanout.Bind(wx.EVT_BUTTON, self.OnButtonFanout)
         self.view.buttonUndo.Bind(wx.EVT_BUTTON, self.OnButtonUndo)
         self.view.buttonClear.Bind(wx.EVT_BUTTON, self.OnButtonClear)
         self.view.buttonClose.Bind(wx.EVT_BUTTON, self.OnButtonClose)
-        self.view.choicePackage.Bind( wx.EVT_CHOICE, self.OnChoicePackage)
-        self.view.choiceAlignment.Bind( wx.EVT_CHOICE, self.OnChoiceAlignment)
-        self.view.choiceDirection.Bind( wx.EVT_CHOICE, self.OnChoiceDirection)
-        self.view.choiceReference.Bind( wx.EVT_CHOICE, self.OnChoiceReference)
+        self.view.choicePackage.Bind(wx.EVT_CHOICE, self.OnChoicePackage)
+        self.view.choiceAlignment.Bind(wx.EVT_CHOICE, self.OnChoiceAlignment)
+        self.view.choiceDirection.Bind(wx.EVT_CHOICE, self.OnChoiceDirection)
+        self.view.choiceReference.Bind(wx.EVT_CHOICE, self.OnChoiceReference)
         self.view.editFilter.Bind(wx.EVT_TEXT, self.OnFilterChange)
         
         self.add_references()
@@ -46,29 +55,31 @@ class Controller:
             self.logger.error('Please chose a Reference')
             return
         else:
-            self.logger.info('Selected reference: %s' %reference)
+            self.logger.info('Selected reference: %s' % reference)
             
         if len(self.tracks) > 0:
             track_index = self.view.GetTrackSelectedIndex()
         else:
             self.logger.error('Please add track width')
             return
-        if len(self.tracks) > 0:
+        if len(self.vias) > 0:
             via_index = self.view.GetViaSelectedIndex()
         else:
             self.logger.error('Please add via')
             return
+        
         package = self.view.GetPackageValue()
-        self.logger.info('package: %s' %package)
+        self.logger.info('package: %s' % package)
         alignment = self.view.GetAlignmentValue()
-        self.logger.info('alignment: %s' %alignment)
+        self.logger.info('alignment: %s' % alignment)
         if package == 'BGA' and alignment == 'Quadrant':
             direction = 'none'
         else:
             direction = self.view.GetDirectionValue()
-        self.logger.info('direction: %s' %direction)
+        self.logger.info('direction: %s' % direction)
         skip_unconnected = self.view.GetSkipUnconnected()
         outer_pad_tracks = self.view.GetOuterPadTracks()
+        
         self.model.update_data(reference, self.tracks[track_index], self.vias[via_index])
         self.model.update_package(package, alignment, direction, skip_unconnected, outer_pad_tracks)
         self.model.fanout()
@@ -123,7 +134,6 @@ class Controller:
         x = self.view.GetPackageIndex()
         y = self.view.GetAlignmentIndex()
         i = event.GetEventObject().GetSelection()
-        #value = event.GetEventObject().GetString(i)
         image = self.packages[x].alignments[y].directions[i].image
         self.view.SetImagePreview(image)
 
@@ -131,17 +141,19 @@ class Controller:
         reference = self.view.GetReferenceSelected()
         if reference == '':
             return
-        footprint = self.board.FindFootprintByReference(reference)
-        if footprint is None:
-            return
-        # Focus and zoom to the footprint
-        pcbnew.FocusOnItem(footprint)
-        pcbnew.Refresh()
+        # Find footprint by reference
+        footprints = self.board.get_footprints()
+        for fp in footprints:
+            if fp.reference_field.text.value == reference:
+                # Add to selection to focus on it
+                self.board.clear_selection()
+                self.board.add_to_selection([fp])
+                break
 
     def OnFilterChange(self, event):
         self.logger.info('OnFilterChange')
         value = event.GetEventObject().GetValue()
-        self.logger.info('text: %s' %value)
+        self.logger.info('text: %s' % value)
         self.view.ClearReferences()
         for ref in self.model.references:
             if ref.rfind(value) != -1:
@@ -152,47 +164,39 @@ class Controller:
         self.view.AddReferences(self.model.references)
 
     def get_tracks_vias(self):
-        units = pcbnew.GetUserUnits()
-        unit = ''
-        scale = 1
-        # pcbnew.EDA_UNITS_INCH = 0
-        if units == pcbnew.EDA_UNITS_INCH:
-            unit = 'in'
-            scale = 25400000
-        # pcbnew.EDA_UNITS_MM = 1
-        elif units == pcbnew.EDA_UNITS_MM:
-            unit = 'mm'
-            scale = 1000000
-        # pcbnew.EDA_UNITS_MILS = 5
-        elif units == pcbnew.EDA_UNITS_MILS:
-            unit = 'mil'
-            scale = 25400
-        else:
-            unit = 'mil'
-            scale = 25400
-        tracks = self.board.GetDesignSettings().m_TrackWidthList
-        vias = self.board.GetDesignSettings().m_ViasDimensionsList
+        # Get design rules from project
+        project = self.board.get_project()
+        design_rules = self.board.get_design_rules()
+        
+        # For now, use default values - the IPC API exposes design rules differently
+        # We'll need to adapt this based on what's available
         tracklist = []
         vialist = []
-        for track in tracks:
-            if track > 0:
-                self.tracks.append(track)
-                display = str(track/scale) + ' ' + unit
-                tracklist.append(display)
-        # pcbnew.VIA_DIMENSION
-        for via in vias:
-            if via.m_Diameter > 0:
-                self.vias.append(via)
-                diam = via.m_Diameter
-                hole = via.m_Drill
-                display = str(diam/scale) + ' / ' + str(hole/scale) + ' ' + unit
-                vialist.append(display)
+        
+        # Default track widths (in nm)
+        default_tracks = [200000, 250000, 300000, 400000, 500000]  # 0.2mm, 0.25mm, etc.
+        for track in default_tracks:
+            self.tracks.append(track)
+            display = f"{to_mm(track):.3f} mm"
+            tracklist.append(display)
+        
+        # Default via sizes (diameter, drill) in nm
+        default_vias = [
+            (800000, 400000),   # 0.8/0.4 mm
+            (600000, 300000),   # 0.6/0.3 mm
+            (500000, 250000),   # 0.5/0.25 mm
+        ]
+        for diam, drill in default_vias:
+            self.vias.append({'diameter': diam, 'drill': drill})
+            display = f"{to_mm(diam):.2f} / {to_mm(drill):.2f} mm"
+            vialist.append(display)
+        
         self.view.AddTracksWidth(tracklist)
         self.view.AddViasSize(vialist)
         self.logger.info('get_design_settings')
 
     def set_package(self):
-        default = 2 #bga
+        default = 2  # bga
         packages = []
         alignments = []
         for package in self.packages:
@@ -220,4 +224,3 @@ class Controller:
         handler.setFormatter(formatter)
         root.addHandler(handler)
         return logging.getLogger(__name__)
-    

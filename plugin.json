@@ -1,0 +1,25 @@
+{
+    "$schema": "https://go.kicad.org/api/schemas/v1",
+    "identifier": "vn.onekiwi.fanout-tool",
+    "name": "Fanout Tool",
+    "description": "BGA fanout routing tool",
+    "runtime": {
+        "type": "python",
+        "min_version": "3.9"
+    },
+    "actions": [
+        {
+            "identifier": "fanout",
+            "name": "Fanout Tool",
+            "description": "Create BGA fanout routing",
+            "show-button": true,
+            "scopes": [
+                "pcb"
+            ],
+            "entrypoint": "fanout_action.py",
+            "icons-light": [
+                "icon/icon.png"
+            ]
+        }
+    ]
+}

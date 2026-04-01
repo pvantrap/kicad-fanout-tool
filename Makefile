@@ -1,4 +1,4 @@
-KICAD_VER ?= "9.0"
+KICAD_VER ?= "10.99"
 PLUGIN_DIR_LOCAL = ~/.local/share/kicad/$(KICAD_VER)/scripting/plugins
 PLUGIN_DIR_FLATPAK = ~/.var/app/org.kicad.KiCad/data/kicad/$(KICAD_VER)/scripting/plugins
 
