@@ -2,7 +2,7 @@
 import os
 import subprocess
 
-LAST_TAG = '2.0.0dev'
+LAST_TAG = '2.0.0'
 
 def _get_git_version():
     plugin_path = os.path.realpath(os.path.dirname(__file__))

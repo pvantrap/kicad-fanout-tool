@@ -18,6 +18,7 @@
             ],
             "entrypoint": "fanout_action.py",
             "icons-light": [
+                "icon/icon_32x32.png",
                 "icon/icon_64x64.png"
             ]
         }
