@@ -261,7 +261,7 @@ class BGA:
         if dx == 0 and dy == 0:
             return
         
-        track_length = int(self.pitchx / 2)
+        track_length = int(self.pitchx * 3)
         end_x = pos.x + dx * track_length
         end_y = pos.y + dy * track_length
         end = Vector2.from_xy(end_x, end_y)
