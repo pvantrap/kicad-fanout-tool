@@ -6,6 +6,9 @@ LAST_TAG = '2.0.0dev'
 
 def _get_git_version():
     plugin_path = os.path.realpath(os.path.dirname(__file__))
+    # If not inside a git repo (installed plugin), skip git lookup
+    if not os.path.isdir(os.path.join(plugin_path, '.git')):
+        return None
     try:
         git_version = subprocess.check_output(
             ['git', 'describe', '--tags', '--abbrev=4', '--dirty=-*'],
