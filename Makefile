@@ -1,7 +1,11 @@
 KICAD_VER ?= "10.99"
-# IPC API plugins installed via PCM go to 3rdparty/plugins
+# IPC API plugins installed via PCM go to 3rdparty/plugins.
+# Install to both 3rdparty/plugins (PCM) and plugins (user path) to ensure
+# pcbnew picks them up even if only the user path is scanned.
 PLUGIN_DIR_LOCAL = ~/.local/share/kicad/$(KICAD_VER)/3rdparty/plugins
+PLUGIN_DIR_LOCAL_USER = ~/.local/share/kicad/$(KICAD_VER)/plugins
 PLUGIN_DIR_FLATPAK = ~/.var/app/org.kicad.KiCad/data/kicad/$(KICAD_VER)/3rdparty/plugins
+PLUGIN_DIR_FLATPAK_USER = ~/.var/app/org.kicad.KiCad/data/kicad/$(KICAD_VER)/plugins
 PLUGIN_ID = vn.onekiwi.fanouttool
 
 test:
@@ -22,15 +26,19 @@ install:
 	@echo "kicad-python>=0.2.0" > $(PLUGIN_ID)/requirements.txt
 	@echo "wxPython~=4.2" >> $(PLUGIN_ID)/requirements.txt
 	@if [ -d $$(dirname $(PLUGIN_DIR_LOCAL)) ]; then \
-		mkdir -p $(PLUGIN_DIR_LOCAL); \
-		echo "Installing to local KiCad: $(PLUGIN_DIR_LOCAL)"; \
-		rm -rf $(PLUGIN_DIR_LOCAL)/$(PLUGIN_ID)/; \
-		mv $(PLUGIN_ID)/ $(PLUGIN_DIR_LOCAL); \
+		mkdir -p $(PLUGIN_DIR_LOCAL) $(PLUGIN_DIR_LOCAL_USER); \
+		echo "Installing to local KiCad: $(PLUGIN_DIR_LOCAL) and $(PLUGIN_DIR_LOCAL_USER)"; \
+		rm -rf $(PLUGIN_DIR_LOCAL)/$(PLUGIN_ID)/ $(PLUGIN_DIR_LOCAL_USER)/$(PLUGIN_ID)/; \
+		cp -r $(PLUGIN_ID)/ $(PLUGIN_DIR_LOCAL)/; \
+		cp -r $(PLUGIN_ID)/ $(PLUGIN_DIR_LOCAL_USER)/; \
+		rm -rf $(PLUGIN_ID)/; \
 	elif [ -d $$(dirname $(PLUGIN_DIR_FLATPAK)) ]; then \
-		mkdir -p $(PLUGIN_DIR_FLATPAK); \
-		echo "Installing to Flatpak KiCad: $(PLUGIN_DIR_FLATPAK)"; \
-		rm -rf $(PLUGIN_DIR_FLATPAK)/$(PLUGIN_ID)/; \
-		mv $(PLUGIN_ID)/ $(PLUGIN_DIR_FLATPAK); \
+		mkdir -p $(PLUGIN_DIR_FLATPAK) $(PLUGIN_DIR_FLATPAK_USER); \
+		echo "Installing to Flatpak KiCad: $(PLUGIN_DIR_FLATPAK) and $(PLUGIN_DIR_FLATPAK_USER)"; \
+		rm -rf $(PLUGIN_DIR_FLATPAK)/$(PLUGIN_ID)/ $(PLUGIN_DIR_FLATPAK_USER)/$(PLUGIN_ID)/; \
+		cp -r $(PLUGIN_ID)/ $(PLUGIN_DIR_FLATPAK)/; \
+		cp -r $(PLUGIN_ID)/ $(PLUGIN_DIR_FLATPAK_USER)/; \
+		rm -rf $(PLUGIN_ID)/; \
 	else \
 		echo "Error: No KiCad plugin directory found"; \
 		rm -rf $(PLUGIN_ID)/; \
