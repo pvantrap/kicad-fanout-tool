@@ -4,15 +4,13 @@
 
 This tool by [OneKiwi](https://github.com/OneKiwiTech) orignally has disappeared from their repositories. It claimed compatibility with KiCad v6 and v7.
 
-This is a fork of a fork which was made compatible with KiCad v9. I
-will try to keep adding future release compatibility for this `pcbnew`
-[Action Plugin](https://dev-docs.kicad.org/en/apis-and-binding/pcbnew/index.html#_action_plugin_support)
-but KiCad will remove the SWIG-based Python bindings in a future
-version hence this code will need porting to the, more stable, IPC
-API. See https://dev-docs.kicad.org/en/apis-and-binding/pcbnew/index.html for
-more info.
+This is a fork of a fork which was made compatible with KiCad v9 &
+v10. I will try to keep adding future release compatibility.
 
 ## Changelog
+
+### v2.0.0dev
+- switch from using SWIG-based Python bindings to the new IPC API for compatibility with future KiCad v11
 
 ### v1.1.4
 - Add option for outer BGA pads to use 3mm straight track (outward) instead of via
