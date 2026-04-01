@@ -4,25 +4,38 @@
 
 import wx
 from kipy import KiCad
-from kipy.errors import ConnectionError
+from kipy.errors import ConnectionError, ApiError
 
 from onekiwi.controller.controller import Controller
 
+
+def _ensure_app():
+    app = wx.GetApp()
+    created = False
+    if app is None:
+        app = wx.App(False)
+        created = True
+    return app, created
+
+
 def main():
+    app, created = _ensure_app()
+
     try:
         kicad = KiCad()
         board = kicad.get_board()
-    except ConnectionError as e:
+    except (ConnectionError, ApiError) as e:
         wx.MessageBox(f"Could not connect to KiCad: {e}", "Fanout Tool Error")
         return
     except Exception as e:
         wx.MessageBox(f"Error: {e}", "Fanout Tool Error")
         return
 
-    app = wx.App()
     controller = Controller(kicad, board)
     controller.Show()
-    app.MainLoop()
+
+    if created:
+        app.MainLoop()
 
 if __name__ == "__main__":
     main()
