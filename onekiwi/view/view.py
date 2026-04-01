@@ -2,7 +2,6 @@ import wx
 from .dialog import *
 from ..version import version
 import os
-from ..kicad.board import get_image_path
 
 class FanoutView(FanoutDialog):
     def __init__(self):
@@ -83,8 +82,8 @@ class FanoutView(FanoutDialog):
         return value
     
     def SetImagePreview(self, name):
-        path = get_image_path()
-        image = os.path.join(path, name)
+        image_dir = os.path.join(os.path.dirname(__file__), '..', 'image')
+        image = os.path.join(os.path.abspath(image_dir), name)
         self.bitmapPreview.SetBitmap(wx.Bitmap(image))
     
     def GetSkipUnconnected(self):
