@@ -19,9 +19,14 @@ mkdir resources
 cp icon/icon_64x64.png resources/
 mv resources/icon_64x64.png resources/icon.png
 
-mkdir plugins
-cp __init__.py plugins/
-cp -r onekiwi/ plugins/
+# Create plugins directory with IPC API plugin structure
+mkdir -p plugins/vn.onekiwi.fanouttool
+cp plugin.json plugins/vn.onekiwi.fanouttool/
+cp fanout_action.py plugins/vn.onekiwi.fanouttool/
+cp -r onekiwi/ plugins/vn.onekiwi.fanouttool/
+cp -r icon/ plugins/vn.onekiwi.fanouttool/
+echo "kicad-python>=0.2.0" > plugins/vn.onekiwi.fanouttool/requirements.txt
+echo "wxPython~=4.2" >> plugins/vn.onekiwi.fanouttool/requirements.txt
 
 zip -r $name plugins resources metadata.json
 

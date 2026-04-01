@@ -2,8 +2,8 @@
     "$schema": "https://go.kicad.org/pcm/schemas/v1",
     "name": "Fanout Tool",
     "description": "BGA Fanout",
-    "description_full": "BGA fanout routing",
-    "identifier": "vn.onekiwi.fanout-tool",
+    "description_full": "BGA fanout routing using the KiCad IPC API",
+    "identifier": "vn.onekiwi.fanouttool",
     "type": "plugin",
     "author": {
         "name": "OneKiwi",
@@ -20,7 +20,8 @@
         {
             "version": "VERSION",
             "status": "stable",
-            "kicad_version": "9.0",
+            "kicad_version": "10.0",
+            "runtime": "ipc",
             "download_sha256": "SHA256",
             "download_size": DOWNLOAD_SIZE,
             "download_url": "https://github.com/pvantrap/kicad-fanout-tool/releases/download/VERSION/fanout-tool-VERSION.zip",
