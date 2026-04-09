@@ -14,6 +14,9 @@ more info.
 
 ## Changelog
 
+### v1.1.5
+- KiCad v10 compatibility, still using SWIG bindings
+
 ### v1.1.4
 - Add option for outer BGA pads to use 3mm straight track (outward) instead of via
 

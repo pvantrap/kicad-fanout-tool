@@ -684,7 +684,7 @@ class BGA:
             self.add_fanout_for_pad(pad, end)
 
     def add_track(self, net, start, end):
-        track = pcbnew.PCB_TRACK(self.board)
+        track = pcbnew.PCB_TRACK(None)
         if self.get_major_version() >= 8:
             # KiCad v8+ - start/end are already VECTOR2I
             track.SetStart(start)
@@ -704,7 +704,7 @@ class BGA:
         self.tracks.append(track)
     
     def add_via(self, net, pos):
-        via = pcbnew.PCB_VIA(self.board)
+        via = pcbnew.PCB_VIA(None)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
         if self.get_major_version() >= 8:
             # KiCad v8+ - pos is already VECTOR2I
